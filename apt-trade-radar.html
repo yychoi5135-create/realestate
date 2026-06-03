@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>아파트 매매 급등 레이더</title>
+<title>부동산 매매 급등 레이더</title>
 <style>
 body{font-family:'Noto Sans KR',sans-serif;background:#f4f1eb;margin:0;padding:0}
 .header{background:#1a1814;color:#f4f1eb;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
@@ -11,7 +11,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f4f1eb;margin:0;padding:0
 .status{font-size:11px;padding:4px 10px;border:1px solid #444;border-radius:4px;color:#aaa}
 .container{max-width:1200px;margin:0 auto;padding:20px}
 .search-box{background:#fff;border:1px solid #ddd;border-radius:4px;padding:20px;margin-bottom:16px;box-shadow:2px 2px 0 #ddd}
-.search-box input,.search-box select{padding:8px 12px;border:1px solid #ddd;border-radius:3px;font-size:13px;margin-right:8px}
+.type-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.type-tab{padding:8px 16px;border:1px solid #ddd;border-radius:20px;font-size:13px;cursor:pointer;background:#f9f9f9;transition:all 0.2s}
+.type-tab.active{background:#1a1814;color:#fff;border-color:#1a1814}
+.type-tab:hover:not(.active){background:#eee}
+.search-row input,.search-row select{padding:8px 12px;border:1px solid #ddd;border-radius:3px;font-size:13px;margin-right:8px}
 .btn{background:#c84b2f;color:#fff;border:none;padding:8px 20px;border-radius:3px;font-size:13px;cursor:pointer;font-weight:700}
 .btn:hover{background:#a83a22}
 .guide{font-size:11px;color:#888;margin-top:8px}
@@ -27,14 +31,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f4f1eb;margin:0;padding:0
 .bar-track{flex:1;height:22px;background:#f4f1eb;border-radius:2px;overflow:hidden}
 .bar-fill{height:100%;background:#c84b2f;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;transition:width 1s ease}
 .bar-val{font-size:10px;color:#fff;font-weight:700;white-space:nowrap}
-.trend-box{background:#fff;border:1px solid #ddd;border-radius:4px;padding:20px;margin-bottom:16px;box-shadow:2px 2px 0 #ddd}
-.month-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.month-tab{padding:6px 14px;border:1px solid #ddd;border-radius:20px;font-size:12px;cursor:pointer;background:#f9f9f9}
-.month-tab.active{background:#1a1814;color:#fff;border-color:#1a1814}
 .signal-box{background:#1a1814;color:#f4f1eb;border-radius:4px;padding:20px;margin-bottom:16px}
 .signal-title{font-size:10px;color:#c84b2f;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
 .signal-item{background:rgba(255,255,255,0.05);border-left:3px solid #c84b2f;padding:10px 14px;margin-bottom:8px;border-radius:0 4px 4px 0}
-.signal-apt{font-weight:700;font-size:14px}
+.signal-name{font-weight:700;font-size:14px}
 .signal-info{font-size:12px;color:#aaa;margin-top:4px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 .table-wrap{background:#fff;border:1px solid #ddd;border-radius:4px;overflow:hidden;box-shadow:2px 2px 0 #ddd}
@@ -47,20 +47,35 @@ tr:hover td{background:#fafaf8}
 .tag-mid{background:#fef3e2;color:#b87020;border:1px solid #f5d89a}
 .tag-normal{background:#f0f0f0;color:#888;border:1px solid #ddd}
 .loading{text-align:center;padding:40px;color:#888;font-size:13px}
-@media(max-width:600px){.summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.summary{grid-template-columns:repeat(2,1fr)}.type-tabs{gap:6px}.type-tab{font-size:12px;padding:6px 12px}}
 </style>
 </head>
 <body>
 <div class="header">
-  <h1>📊 아파트 매매 급등 레이더</h1>
+  <h1>📊 부동산 매매 급등 레이더</h1>
   <div class="status" id="status">서버 확인 중...</div>
 </div>
 <div class="container">
+
   <div class="search-box">
-    <div>
+    <!-- 종류 탭 -->
+    <div class="type-tabs">
+      <div class="type-tab active" data-type="apt" onclick="selectType(this)">🏢 아파트</div>
+      <div class="type-tab" data-type="officetel" onclick="selectType(this)">🏨 오피스텔</div>
+      <div class="type-tab" data-type="sh" onclick="selectType(this)">🏠 단독·다가구</div>
+      <div class="type-tab" data-type="rh" onclick="selectType(this)">🏘️ 연립·다세대</div>
+      <div class="type-tab" data-type="building" onclick="selectType(this)">🏬 집합건물</div>
+      <div class="type-tab" data-type="land" onclick="selectType(this)">🌳 토지</div>
+    </div>
+    <!-- 검색 -->
+    <div class="search-row">
       지역코드: <input id="lawdCd" value="26350" style="width:70px">
       기준연월: <input id="dealYmd" value="202504" style="width:70px">
-      건수: <select id="numRows"><option value="50">50건</option><option value="100" selected>100건</option><option value="200">200건</option></select>
+      건수: <select id="numRows">
+        <option value="50">50건</option>
+        <option value="100" selected>100건</option>
+        <option value="200">200건</option>
+      </select>
       <button class="btn" onclick="loadAll()">🔍 전체 분석</button>
     </div>
     <div class="guide">
@@ -76,30 +91,33 @@ tr:hover td{background:#fafaf8}
   </div>
 
   <div class="signal-box" id="signalBox" style="display:none">
-    <div class="signal-title">🚨 급등 신호 감지 — 평균 대비 1.5배 이상</div>
+    <div class="signal-title">🚨 급등 신호 — 평균 대비 1.5배 이상</div>
     <div id="signalList"></div>
   </div>
 
   <div class="chart-box" id="chartBox" style="display:none">
-    <div class="chart-title">TOP 10 — 아파트별 최고 거래가 (만원)</div>
+    <div class="chart-title" id="chartTitle">TOP 10 — 최고 거래가 (만원)</div>
     <div id="barChart"></div>
   </div>
 
-  <div class="trend-box" id="trendBox" style="display:none">
-    <div class="chart-title">📅 3개월 추세 비교</div>
-    <div class="month-tabs" id="monthTabs"></div>
-    <div id="trendChart"></div>
-  </div>
-
   <div id="tableWrap">
-    <div class="loading">🏢 지역코드와 연월 입력 후 전체 분석 버튼을 눌러주세요</div>
+    <div class="loading">🏢 종류를 선택하고 전체 분석 버튼을 눌러주세요</div>
   </div>
 </div>
 
 <script>
 const SERVER = 'https://web-production-ef2cb.up.railway.app';
-let allData = [];
-let trendData = {};
+let currentType = 'apt';
+
+const TYPE_NAMES = {
+  apt: '아파트', officetel: '오피스텔', sh: '단독·다가구',
+  rh: '연립·다세대', building: '집합건물', land: '토지'
+};
+
+const NAME_FIELDS = {
+  apt: 'aptNm', officetel: 'offiNm', sh: 'houseType',
+  rh: 'mhouseNm', building: 'bldgNm', land: 'landUseCd'
+};
 
 async function checkServer() {
   try {
@@ -112,46 +130,41 @@ async function checkServer() {
   }
 }
 checkServer();
-setInterval(checkServer, 10000);
 
-async function fetchMonth(lawdCd, ym, numRows) {
-  const url = `${SERVER}/api/apt?LAWD_CD=${lawdCd}&DEAL_YMD=${ym}&numOfRows=${numRows}`;
+function selectType(el) {
+  document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentType = el.dataset.type;
+}
+
+async function fetchMonth(lawdCd, ym, numRows, type) {
+  const url = `${SERVER}/api/trade?LAWD_CD=${lawdCd}&DEAL_YMD=${ym}&numOfRows=${numRows}&type=${type}`;
   const res = await fetch(url);
   const text = await res.text();
   const parser = new DOMParser();
   const xml = parser.parseFromString(text, 'text/xml');
   const items = xml.querySelectorAll('item');
+  const nameField = NAME_FIELDS[type] || 'aptNm';
   const data = [];
   items.forEach(item => {
     const get = tag => item.querySelector(tag)?.textContent?.trim() || '';
-    const price = parseInt(get('dealAmount').replace(/,/g,'')) || 0;
+    const priceRaw = (get('dealAmount') || get('dealAmt') || '0').replace(/,/g,'');
+    const price = parseInt(priceRaw) || 0;
+    const name = get(nameField) || get('aptNm') || get('offiNm') || get('houseType') || '미상';
     data.push({
-      aptNm: get('aptNm'),
+      name: name,
       dealAmount: price,
-      dealAmountStr: get('dealAmount'),
-      area: parseFloat(get('excluUseAr')||'0').toFixed(1),
-      floor: get('floor'),
+      dealAmountStr: get('dealAmount') || get('dealAmt') || '0',
+      area: parseFloat(get('excluUseAr') || get('plottageAr') || '0').toFixed(1),
+      floor: get('floor') || '-',
       dealYear: get('dealYear'),
       dealMonth: get('dealMonth'),
       dealDay: get('dealDay'),
-      umdNm: get('umdNm'),
-      buildYear: get('buildYear'),
+      umdNm: get('umdNm') || get('ldCodeNm') || '',
+      buildYear: get('buildYear') || '-',
     });
   });
   return data;
-}
-
-function getPrevMonths(ym, n) {
-  let y = parseInt(ym.substring(0,4));
-  let m = parseInt(ym.substring(4,6));
-  const months = [];
-  for(let i = n-1; i >= 0; i--) {
-    let mm = m - i;
-    let yy = y;
-    while(mm <= 0) { mm += 12; yy--; }
-    months.push(yy + String(mm).padStart(2,'0'));
-  }
-  return months;
 }
 
 async function loadAll() {
@@ -160,30 +173,27 @@ async function loadAll() {
   const numRows = document.getElementById('numRows').value;
   if(!lawdCd || !dealYmd) { alert('지역코드와 연월을 입력해주세요'); return; }
 
-  document.getElementById('tableWrap').innerHTML = '<div class="loading">📡 데이터 불러오는 중... 잠시만 기다려주세요</div>';
+  const typeName = TYPE_NAMES[currentType];
+  document.getElementById('tableWrap').innerHTML = `<div class="loading">📡 ${typeName} 데이터 분석 중...</div>`;
   document.getElementById('summary').style.display = 'none';
   document.getElementById('signalBox').style.display = 'none';
   document.getElementById('chartBox').style.display = 'none';
-  document.getElementById('trendBox').style.display = 'none';
 
   try {
-    // 3개월치 데이터 동시 로딩
-    const months = getPrevMonths(dealYmd, 3);
-    document.getElementById('tableWrap').innerHTML = `<div class="loading">📡 ${months.join(', ')} 3개월 데이터 분석 중...</div>`;
+    const data = await fetchMonth(lawdCd, dealYmd, numRows, currentType);
 
-    const results = await Promise.all(months.map(m => fetchMonth(lawdCd, m, numRows)));
-    trendData = {};
-    months.forEach((m, i) => { trendData[m] = results[i]; });
-    allData = results[results.length - 1]; // 기준월 데이터
+    if(data.length === 0) {
+      document.getElementById('tableWrap').innerHTML = `<div class="loading">🔍 해당 기간 ${typeName} 거래 데이터가 없습니다</div>`;
+      return;
+    }
 
-    renderSummary(allData);
-    renderSignals(allData);
-    renderChart(allData);
-    renderTrend(months, trendData);
-    renderTable(allData);
+    renderSummary(data);
+    renderSignals(data, typeName);
+    renderChart(data, typeName);
+    renderTable(data, typeName);
 
   } catch(e) {
-    document.getElementById('tableWrap').innerHTML = `<div class="loading">❌ 오류: ${e.message}<br>서버가 실행 중인지 확인하세요</div>`;
+    document.getElementById('tableWrap').innerHTML = `<div class="loading">❌ 오류: ${e.message}</div>`;
   }
 }
 
@@ -197,27 +207,28 @@ function renderSummary(data) {
   document.getElementById('s-max').textContent = max.toLocaleString();
   document.getElementById('s-signal').textContent = signals.length;
   document.getElementById('summary').style.display = 'grid';
-  return { avg, max, signals };
+  return avg;
 }
 
-function renderSignals(data) {
+function renderSignals(data, typeName) {
   const prices = data.map(d => d.dealAmount).filter(p => p > 0);
   const avg = Math.round(prices.reduce((a,b) => a+b, 0) / prices.length);
   const signals = data.filter(d => d.dealAmount >= avg * 1.5).sort((a,b) => b.dealAmount - a.dealAmount);
   if(signals.length === 0) return;
   document.getElementById('signalList').innerHTML = signals.map(d => `
     <div class="signal-item">
-      <div class="signal-apt">🔴 ${d.aptNm}</div>
+      <div class="signal-name">🔴 ${d.name}</div>
       <div class="signal-info">${d.umdNm} · ${d.dealAmountStr}만원 · ${d.area}㎡ · ${d.floor}층 · ${d.dealYear}.${d.dealMonth}.${d.dealDay} · 평균 대비 ${Math.round(d.dealAmount/avg*100)}%</div>
     </div>`).join('');
   document.getElementById('signalBox').style.display = 'block';
 }
 
-function renderChart(data) {
-  const aptMax = {};
-  data.forEach(d => { if(!aptMax[d.aptNm] || d.dealAmount > aptMax[d.aptNm]) aptMax[d.aptNm] = d.dealAmount; });
-  const top10 = Object.entries(aptMax).sort((a,b) => b[1]-a[1]).slice(0,10);
+function renderChart(data, typeName) {
+  const nameMax = {};
+  data.forEach(d => { if(!nameMax[d.name] || d.dealAmount > nameMax[d.name]) nameMax[d.name] = d.dealAmount; });
+  const top10 = Object.entries(nameMax).sort((a,b) => b[1]-a[1]).slice(0,10);
   const chartMax = top10[0]?.[1] || 1;
+  document.getElementById('chartTitle').textContent = `TOP 10 — ${typeName} 최고 거래가 (만원)`;
   document.getElementById('barChart').innerHTML = top10.map(([name, val]) => {
     const pct = Math.round((val/chartMax)*100);
     return `<div class="bar-row">
@@ -228,48 +239,16 @@ function renderChart(data) {
   document.getElementById('chartBox').style.display = 'block';
 }
 
-function renderTrend(months, trendData) {
-  const tabs = document.getElementById('monthTabs');
-  tabs.innerHTML = months.map((m, i) => `
-    <div class="month-tab ${i===months.length-1?'active':''}" onclick="showTrend('${m}', this)">${m.substring(0,4)}년 ${parseInt(m.substring(4,6))}월</div>
-  `).join('');
-
-  showTrend(months[months.length-1], tabs.lastElementChild);
-  document.getElementById('trendBox').style.display = 'block';
-}
-
-function showTrend(ym, el) {
-  document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  const data = trendData[ym] || [];
-  if(data.length === 0) { document.getElementById('trendChart').innerHTML = '<div style="color:#888;font-size:13px">해당 월 데이터가 없습니다</div>'; return; }
-  const aptMax = {};
-  data.forEach(d => { if(!aptMax[d.aptNm] || d.dealAmount > aptMax[d.aptNm]) aptMax[d.aptNm] = d.dealAmount; });
-  const top10 = Object.entries(aptMax).sort((a,b) => b[1]-a[1]).slice(0,10);
-  const chartMax = top10[0]?.[1] || 1;
-  const prices = data.map(d => d.dealAmount).filter(p => p > 0);
-  const avg = Math.round(prices.reduce((a,b) => a+b, 0) / prices.length);
-  document.getElementById('trendChart').innerHTML = `
-    <p style="font-size:12px;color:#888;margin-bottom:12px">총 ${data.length}건 · 평균 ${avg.toLocaleString()}만원</p>
-    ${top10.map(([name, val]) => {
-      const pct = Math.round((val/chartMax)*100);
-      return `<div class="bar-row">
-        <div class="bar-name" title="${name}">${name}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"><span class="bar-val">${val.toLocaleString()}</span></div></div>
-      </div>`;
-    }).join('')}`;
-}
-
-function renderTable(data) {
+function renderTable(data, typeName) {
   const prices = data.map(d => d.dealAmount).filter(p => p > 0);
   const avg = Math.round(prices.reduce((a,b) => a+b, 0) / prices.length);
   const sorted = [...data].sort((a,b) => b.dealAmount - a.dealAmount);
   document.getElementById('tableWrap').innerHTML = `
     <div class="table-wrap">
-      <div class="table-header"><span>전체 거래 내역</span><span>${data.length}건</span></div>
+      <div class="table-header"><span>${typeName} 거래 내역</span><span>${data.length}건</span></div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>아파트명</th><th>법정동</th><th>거래가(만원)</th><th>전용(㎡)</th><th>층</th><th>거래일</th><th>건축연도</th><th>신호</th></tr></thead>
+          <thead><tr><th>명칭</th><th>법정동</th><th>거래가(만원)</th><th>면적(㎡)</th><th>층</th><th>거래일</th><th>건축연도</th><th>신호</th></tr></thead>
           <tbody>
             ${sorted.map(d => {
               let tag, tagClass;
@@ -277,7 +256,7 @@ function renderTable(data) {
               else if(d.dealAmount >= avg*1.2){tag='🟡 주목';tagClass='tag-mid';}
               else{tag='⚪ 일반';tagClass='tag-normal';}
               return `<tr>
-                <td style="font-weight:700">${d.aptNm}</td>
+                <td style="font-weight:700">${d.name}</td>
                 <td style="color:#2f6bc8">${d.umdNm}</td>
                 <td style="color:#c84b2f;font-weight:700">${d.dealAmountStr}</td>
                 <td style="color:#888">${d.area}</td>
