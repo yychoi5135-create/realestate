@@ -1,12 +1,21 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 import requests
+import os
 
 app = Flask(__name__)
 CORS(app)
 
 SERVICE_KEY = 'e62d76c76fd300608912abda46bd7be3d631859463b4314fea20b66dcadb8715'
 BASE_URL = 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev'
+
+@app.route('/')
+def index():
+    return send_file('apt-trade-radar.html')
+
+@app.route('/apt-trade-radar.html')
+def radar():
+    return send_file('apt-trade-radar.html')
 
 @app.route('/api/apt', methods=['GET'])
 def get_apt_data():
@@ -32,9 +41,5 @@ def get_apt_data():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    print('=' * 40)
-    print('✅ 부동산 API 서버 시작!')
-    print('주소: http://localhost:5000')
-    print('종료: Ctrl + C')
-    print('=' * 40)
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
